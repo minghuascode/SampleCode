@@ -1,0 +1,111 @@
+<html><head>
+  <script language=javascript type='text/javascript'>
+  /*see code.google.com/edu/ajax/tutorials/ajax-tutorial.html */
+  var obj; var prompt = true; var reqcnt = 0; var procnt = 0;
+
+  function processXML(v) {
+    var loc = document.location;
+    var url = 'getGoogSugg.php?query=' + v;
+    url += '&randkey=' + (new Date()).getTime();
+    document.getElementById('ajaxrequest').innerHTML = url;
+    // native  object
+    if (window.XMLHttpRequest) {
+      obj = new XMLHttpRequest();
+      obj.onreadystatechange = processChange;
+      obj.open("GET", url, true); // "true" for asynch
+      obj.send(null);// null for GET, string for POST
+    } else if (window.ActiveXObject) {// IE/Windows ActiveX object
+      obj = new ActiveXObject("Microsoft.XMLHTTP");
+      if (obj) {
+        obj.onreadystatechange = processChange;
+        obj.open("GET", url, true);
+        obj.send();// don't send null for ActiveX
+      }
+    } else {
+      alert("Your browser does not support AJAX");
+    }
+  }
+  //window.google.ac.h(["gfdff",[["gfdff","","0"],["gffg","","1sv"],["gfdfd","","2sv"]],{}])
+  window.google = function(){};
+  window.google.ac = function(){};
+  window.google.ac.h = function(ary1)
+  {
+    var v = document.getElementById('sugDiv');
+    var term = ary1[0]; // ary1.length=3
+    var list = ary1[1];
+    var agg = '<div> term ' + term + '<br />';
+    for (var i=0; i<list.length; i++) {
+      agg += ' ' + list[i][0] + '<br />';
+    }
+    agg += '</div>';
+    v.innerHTML = agg;
+  }
+  function processChange() {
+      // 4 means the response has been returned and ready to be processed
+      if (obj.readyState == 4) {
+        if (obj.status == 200) {// 200 means "OK"
+          if (prompt) {
+            document.getElementById('ajaxstatus').innerHTML += ' good <br />';
+            prompt = false;
+          }
+          document.getElementById('ajaxresponse').innerHTML = obj.responseText;
+          document.getElementById('ajaxtext').innerHTML = obj.responseText;
+          eval(obj.responseText);
+        } else {
+            alert("There was a problem in the returned data: \n" + 
+                  obj.readyState + " " + obj.status + " " + obj.aborted +"\n");
+        }
+      }
+      if (prompt) {
+        document.getElementById('ajaxstatus').innerHTML +=
+                ' ' + obj.readyState + ' ' + obj.status + ' <br />';
+      }
+  }
+  function processKeyUp() {
+    if ( reqcnt > procnt ) return;
+    reqcnt ++;
+    setTimeout( function() {
+                  procnt ++;
+                  var k = document.getElementById('text1');
+                  var v = document.getElementById('tgtDiv');
+                  var t = k.value;
+                  v.innerHTML = '<div> ' + t + ' </div>';
+                  if (t) { processXML(encodeURI(encodeURI(t))); }
+                }, 300);
+  }
+  </script>
+  <style> #sugDiv { background-color: #edb; width: 90%; } </style>
+
+</head> <body onload='processKeyUp()'>
+  <table border='3' padding='3'>
+    <tr><th> </th>       <th>Ajax Test Status and Goog Sugg</th></tr>
+    <tr><td>request</td> <td><div id='ajaxrequest'>  </div></td></tr>
+    <tr><td>status</td>  <td><div id='ajaxstatus'>   </div></td></tr>
+    <tr><td>response</td><td><div id='ajaxresponse'> </div></td></tr>
+  </table>
+<p>
+  <table border='0' padding='0' width='45%'>
+    <tr><td>Enter your term:</td> <td>
+         <input id='text1' type='text' name='text1' onkeyup='processKeyUp()' />  
+                                                                     </td></tr>
+    <tr><td>Goog Sugg </td> <td> <div id='sugDiv'><div> </div></div> </td></tr>
+    <tr><td>KeyU Value</td> <td> <div id='tgtDiv'><div> </div></div> </td></tr>
+  </table>
+</p>
+<p id='ajaxtext'> </p>
+
+</body></html>
+<!--see "Ajax/your visual blueprint for creating rich internet applications" 
+        by Steven Holzner, Ph.D. Wiley.
+put this into getGoogSugg.php:
+<?php
+ $phpHandle=
+  fopen("http://www.google.com/complete/search?hl=en&js=true&qu=".
+        $_GET["query"], "r");
+  while( !feof($phpHandle) ) {
+    $textData=fgets($phpHandle);
+    echo $textData;
+  }
+  fclose($phpHandle);
+?>
+-->
