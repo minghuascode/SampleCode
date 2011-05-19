@@ -1,0 +1,72 @@
+<html><head>
+  <script language=javascript type='text/javascript'>
+  /*see code.google.com/edu/ajax/tutorials/ajax-tutorial.html */
+  var obj; var prompt = true;
+  function ProcessXML() {
+    var loc = document.location;
+    var url = loc.protocol + '//' + loc.host + '/ajaxtest/getdate.php';
+    url += '?rand=' + parseInt(Math.random()*999999999999);
+    document.getElementById('ajaxrq').innerHTML = url;
+    // native  object
+    if (window.XMLHttpRequest) {
+      obj = new XMLHttpRequest();
+      obj.onreadystatechange = processChange;
+      obj.open("GET", url, true); // "true" for asynch
+      obj.send(null);// null for GET, string for POST
+    } else if (window.ActiveXObject) {// IE/Windows ActiveX object
+      obj = new ActiveXObject("Microsoft.XMLHTTP");
+      if (obj) {
+        obj.onreadystatechange = processChange;
+        obj.open("GET", url, true);
+        obj.send();// don't send null for ActiveX
+      }
+    } else {
+      alert("Your browser does not support AJAX");
+    }
+  }
+  function processChange() {
+      // 4 means the response has been returned and ready to be processed
+      if (obj.readyState == 4) {
+        if (obj.status == 200) {// 200 means "OK"
+          if (prompt) {
+            document.getElementById('ajaxprompt').innerHTML += ' good <br />';
+            prompt = false;
+          }
+          document.getElementById('ajaxdate').innerHTML =
+                obj.responseXML.getElementsByTagName("timenow")[0]
+                   .childNodes[0].nodeValue;
+          document.getElementById('ajaxtext').innerHTML = obj.responseText;
+          setTimeout( function(){ProcessXML();}, 1000 );
+        } else {
+            alert("There was a problem in the returned data: \n" + 
+                  obj.readyState + " " + obj.status + " " + obj.aborted +"\n");
+        }
+      }
+      if (prompt) {
+        document.getElementById('ajaxprompt').innerHTML +=
+                ' ' + obj.readyState + ' ' + obj.status + ' <br />';
+        document.getElementsByTagName('p')[1].childNodes[0].nodeValue =
+	        document.getElementById('ajaxprompt').innerHTML;
+      }
+  }
+  </script>
+
+</head> <body onload='ProcessXML()'>
+  <table border='3' padding='3'>
+    <tr><th>Ajax Test Prompt and Date<th></tr>
+    <tr><td><div id='ajaxprompt'></div></td></tr>
+    <tr><td><div id='ajaxdate'></div></td></tr>
+  </table>
+<p> A Normal Paragraph </p>
+<p> </p>
+<p id='ajaxtext'></p>
+<p id='ajaxrq'></p>
+</body></html>
+<!--
+put this into ajaxtest/getdate.php:
+<?php header('Content-Type: text/xml');
+      date_default_timezone_set('UTC');
+      echo "<?xml version=\"1.0\" ?><clock><timenow>"
+           .date('H:i:s')."</timenow></clock>";
+?>
+-->
