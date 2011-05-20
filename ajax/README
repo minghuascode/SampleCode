@@ -2,4 +2,5 @@
 test1.html: ajax get and show server time.
 test2.html: ajax get google suggest by GET.
 test3.html: ajax get google suggest by POST.
+mouse-event.html: javascript mouse event.
 
