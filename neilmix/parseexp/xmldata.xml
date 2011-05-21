@@ -1,0 +1,7 @@
+<foo x="blah" y="some &amp; more">
+	<bar/>
+	some text
+	<baz>bee</baz>
+	<![CDATA[ sdfsdfsdfsdf ]]>
+	<bar x="<![CDATA[sdf]]>"/>
+</foo>

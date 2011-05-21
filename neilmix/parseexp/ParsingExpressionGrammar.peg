@@ -1,0 +1,44 @@
+# Hierarchical syntax
+Grammar     <- Spacing Definition+
+Definition  <- Identifier LEFTARROW Pattern
+
+Pattern     <- Sequence (SLASH Sequence)*
+Sequence    <- Expression+
+Expression  <- Prefix Primary / Primary Suffix?
+Prefix      <- AND / NOT
+Suffix      <- QUESTION / STAR / PLUS 
+Primary     <- Identifier !LEFTARROW / 
+               GROUP_OPEN Pattern GROUP_CLOSE / 
+               GRAB_OPEN Pattern GRAB_CLOSE /
+               Literal / Class / DOT 
+
+# Lexical syntax
+Identifier  <- <IdentStart IdentCont*> Spacing
+IdentStart  <- [a-zA-Z_]
+IdentCont   <- IdentStart / [0-9]
+
+Literal     <- ['] (!['] Char)* ['] Spacing
+             / ["] (!["] Char)* ["] Spacing
+
+Class       <- '[' (!']' Range)* ']' Spacing
+Range       <- Char '-' Char / Char
+Char        <- '\\' [nrt'"\[\]\\]
+             / !'\\' .
+             
+LEFTARROW   <- '<-' Spacing 
+SLASH       <- '/' Spacing 
+AND         <- '&'
+NOT         <- '!'
+QUESTION    <- '?' Spacing 
+STAR        <- '*' Spacing 
+PLUS        <- '+' Spacing 
+GROUP_OPEN  <- '(' Spacing 
+GROUP_CLOSE <- ')' Spacing
+GRAB_OPEN   <- '<' Spacing
+GRAB_CLOSE  <- '>' Spacing
+DOT         <- '.' Spacing 
+
+Spacing     <- <Space / Comment>* 
+Comment     <- '#' <!EndOfLine .>* EndOfLine 
+Space       <- ' ' / '\t' / EndOfLine 
+EndOfLine   <- '\r\n' / '\n' / '\r' 

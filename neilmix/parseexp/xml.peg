@@ -1,0 +1,27 @@
+Document    <- Spacing Element
+Element     <- Standalone / OpenTag (Element / TextNode)* CloseTag
+
+Standalone  <- '<' Identifier Attribute* '/>' Spacing
+
+OpenTag     <- '<' Identifier Attribute* '>' Spacing
+CloseTag    <- '</' Identifier '>' Spacing
+
+Identifier  <- ([a-zA-Z_] [a-zA-Z0-9-_]*) Spacing
+Attribute   <- Identifier EQUALS Literal Spacing
+Literal     <- '"' LiteralSegment* '"'
+
+TextNode    <- TextSegment+ Spacing
+
+LiteralSegment <- LiteralText / Entity / CDATA
+LiteralText    <- < (!["&<] .)+ >
+
+TextSegment    <- TextNodeText / Entity / CDATA
+TextNodeText   <- < (![&<] .)+ >
+
+Entity      <- '&' <(!';' .)+> ';'
+CDATA       <- '<![CDATA[' <(!']]>' .)*> ']]>'
+
+EQUALS      <- '=' Spacing
+
+Spacing     <- Space* 
+Space       <- ' ' / '\t' / '\r\n' / '\n' / '\r' 

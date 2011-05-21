@@ -1,0 +1,32 @@
+
+http://www.neilmix.com/projects/
+downloaded: 2011-5-20 23:52 PST Friday
+
+
+Projects
+
+This is a list of things I tinker with in my spare time. You may find some of it useful, but most of it is purely for my own educational purposes. Feel free to use as you see fit, and drop me an email if you have any questions.
+
+Stuff You Might Be Able To Use
+
+**Narrative JavaScript**: My first open-source project, this was an attempt to build pseudo-concurrency into JavaScript through source code transformation. It works well, but never really caught on and became popular. My thinking about such things has since evolved, and I no longer think narrativejs is the best way to approach the problems I was trying to solve. As a result, I’m no longer actively developing the project.
+
+**Mock Threading in JavaScript 1.7**: This is a fun, tiny library I put together that uses generators (from JS 1.7, Firefox 2) and a technique called trampolining to enable a thread-like coding style.
+
+Theory-Driven Geekery
+
+**ParseExp**: A JavaScript-based parser generator that uses Parsing Expression Grammars for its grammar definitions. This provided me a fun way to learn about PEGs and parsing in general. One neat trick to this library is that the PEG syntax itself is written in code as static data structures that are used to generate a parser that parses PEG inputs. In other words, the library uses its own engine to generate a parser that parses its inputs. The economy of such a mind-warping circularity is impressive.
+
+**Combinator.js**: Extending on my experience with ParseExp, this was a generic parser-combinator framework I built to learn how combinators work. Combinators are fun! Be sure to check out the JSON parser in less than 50 lines of code. It’s slow as molasses, but pretty readable.
+
+**miniparse**: This was an attempt to write the smallest JavaScript language parser I could using combinators. I was going to pair this with an execution engine, but eventually dropped this in favor of the much faster and smaller technique I used in the generators project (see below).
+
+**generators**: This was an attempt to back-port JavaScript 1.7 style generators to earlier JavaScript versions through a clever (read: diabolical) hack. The library works by taking a regular JavaScript function object, calling toString() on it, parsing the results, translating it into bytecode, and the running it against a mini meta-circular interpreter. The generators are invoked via the yield function rather than keyword (which, when coded correctly, can be forward-compatible with JS 1.7). And it works! It’s only one order-of-magnitude slower than native JS (which is better than I expected). Sadly, this never made it to the “you might be able to use it” category because toString() turns out to be buggy: both Mozilla and Webkit generate bytecode from JS and discard the resulting ASTs. As a result, toString() re-generates the function definition from bytecode. Inevitably there are corner cases that aren’t handled 100% correctly.
+
+Notable in this library are 1) it’s only about 25K, and 2) it tokenizes (almost) all of the JavaScript language with a single regular expression. Why almost? Regex literals can be confused with division, thus they’d need a little special treatment deep down in the bytecode generator. The tokenizing hack ignores any syntactically invalid code, which was OK in the case of this library because we (supposedly) know that the input is syntactically correct.
+
+**template**: This is a prototype library I threw together one evening after a friend of mine asked me if it was possible to quickly create a templating system using JavaScript/DOM. My friend ended up not needing the library, which is good because the design turned out to be flawed. Abandoned.
+Works In Progress
+
+**Project X: see my rant about DOM. Very early; it’s too soon to tell if my idea is the least bit feasible, hence the lack of details.
+
