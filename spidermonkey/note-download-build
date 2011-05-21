@@ -1,0 +1,39 @@
+
+ftp://ftp.mozilla.org/pub/mozilla.org/js/
+downloaded 1.7(10/19/2007), 1.8(3/9/2009) on 2011-5-20.
+
+All docs under jsdoc/ are referred to by SpiderMonkey
+https://developer.mozilla.org/en/SpiderMonkey
+
+Some docs are not accurate. 1.8.1 adds tracing JIT.
+
+
+https://developer.mozilla.org/En/SpiderMonkey/Build_Documentation
+downloaded: 2011-5-20
+
+Building SpiderMonkey 1.8 or earlier
+
+To build, use these commands:
+
+tar xvzf js-1.8.0-rc1.tar.gz
+cd js/src
+make -f Makefile.ref
+
+This builds a debug version of SpiderMonkey. All build files are created in a subdirectory named depending on your system (for example, Linux_All_DBG.OBJ if you are on Linux). To install this build on your system, see SpiderMonkey installation instructions.
+
+To build an optimized (non-debug) version of SpiderMonkey:
+
+make BUILD_OPT=1 -f Makefile.ref
+
+To build a thread-safe version of SpiderMonkey:
+
+make JS_DIST=/full/path/to/directory/containing/nspr JS_THREADSAFE=1 -f Makefile.ref
+
+
+Testing SpiderMonkey
+
+The commands below assume you're using the advanced build.
+
+    * Run ./js ../perfect.js and check if appropriate output is printed.
+    * Run the main test suite by running ../tests/jstests.py ./js
+
