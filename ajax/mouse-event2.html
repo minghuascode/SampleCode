@@ -1,0 +1,81 @@
+<html><head> <!-- mouset-event.html -->
+  <script language=javascript type='text/javascript'>
+
+  function MouseEvent(e) {
+    /* else clauses for IE */
+    if (e) this.e = e; else this.e=window.event;
+    if (e.pageX) this.x = e.pageX; else this.x = e.clientX; 
+    if (e.pageY) this.y = e.pageY; else this.x = e.clientY; 
+    if (e.target) this.target=e.target; else this.target=e.srcElement;
+  }
+
+  function processMove(evt) {
+    var e = new MouseEvent(evt);
+    document.getElementById('posx').innerHTML = ' ' + e.x;
+    document.getElementById('posy').innerHTML = ' ' + e.y;
+    document.getElementById('post').innerHTML = ' ' + e.target.name;
+    document.getElementById('winw').innerHTML = window.innerWidth;
+    document.getElementById('winh').innerHTML = window.innerHeight;
+    document.getElementById('tgtleft').innerHTML = 
+                document.getElementById('tgtt').style.left;
+    document.getElementById('tgttop').innerHTML = 
+                document.getElementById('tgtt').style.top;
+  }
+  function processKeyUp() {
+  }
+  function processDown(evt) {
+    var tgtelem = document.getElementById('tgtt');
+    var astyle = window.getComputedStyle(tgtelem, null);
+    tgtelem.aastyle = astyle;
+    var i=0, cx=0, cy=0; 
+    var elem = tgtelem;
+    for (i=0; i<100; i++) {
+        if (elem == null ) break;
+        cx += elem.offsetLeft;
+        cy += elem.offsetTop;
+        if (elem.offsetParent == null ) break;
+        elem = elem.offsetParent;
+    }
+    document.getElementById('tgtleft').innerHTML = cx;
+    document.getElementById('tgttop').innerHTML = cy;
+    document.getElementById('tgtnam').innerHTML = elem.localName;
+  }
+  </script>
+  <style> #tgtleft, #tgttop { background-color: #edb; width: 90%; }
+          #tgtt { background-color: #362; width:80%;
+                  position:relative; left:30; top:10; }
+  </style>
+
+</head> <body onload='processKeyUp()' onmousemove='processMove(event)' 
+              onmousedown='processDown(event)'>
+  <table border='3' padding='3' width='90%' height='90%'>
+    <tr><td> <input type='button' name='btn1' value='btn1' /> </td>
+        <td> <input type='text' name='btn2' value='btn2' /> </td></tr>
+    <tr><td> <input type='button' name='btn3' value='btn3' /> </td>
+        <td> <table width='90%' padding='1' border='1'>
+             <tr><td> X <span id='posx'> </span> </td> 
+                 <td> innerWidth <span id='winw'> </span> </td>
+                 <td> tgt w <span id='tgtleft'> </span> </td> </tr>
+             <tr><td> Y <span id='posy'> </span> </td>
+                 <td> innerHeight <span id='winh'> </span> </td> 
+                 <td> tgt h <span id='tgttop'> </span> </td> </tr>
+             <tr><td> <div id='tgtt' style='left:5;top:3'> target 
+                        <span id='post'> </span> </div> </td> <td> </td>
+                 <td>tgt n<span id='tgtnam'> </span> </td> </tr>
+             </table>
+             <pre>
+Mouse events: 
+   onmousemove, onmousedown, onclick, ondblclick, 
+   onmouseenter, onmouseleave, 
+DOM Element .style.
+   left, top, width, height, z-index, visibility:hidden|visible, 
+             </pre>
+        </td></tr>
+  </table>
+<p>
+  end of page
+</p>
+</body></html>
+<!--see "Ajax/your visual blueprint for creating rich internet applications" 
+        by Steven Holzner, Ph.D. Wiley.
+-->
