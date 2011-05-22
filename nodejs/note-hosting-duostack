@@ -1,0 +1,45 @@
+
+note-hosting-duostack
+2011-5-21
+
+
+Create Account
+===============
+Get an account by providing your email address on duostack web site.
+Receive an email. Then follow the verification link. 
+
+
+Local Setup
+=============
+
+Download duostack-client.latest.tgz.
+Curently it is version 0.5.0.
+
+Create your ssh key.
+
+Run 'duostack list'. It will prompt for first-time client setup, and 
+ask you to provide the registered email address.
+
+Create a git repo for 'nodedemo'. Put the code below to server.js:
+
+  var http = require('http');
+
+  http.createServer(function (req, res) {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('Hello World from Duostack!\n');
+  }).listen(8124, "127.0.0.1");
+
+  console.log('Server running at http://127.0.0.1:8124/');
+
+Commit git. 
+
+
+Deploy App
+=============
+
+Run 'duostack create nodedemo'.
+Run 'git push duostack master'. Do this after any app change.
+
+Note: The app name 'nodedemo' will be rejected by duostack. 
+      Try something that has not been used.
+
