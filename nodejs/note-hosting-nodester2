@@ -1,0 +1,35 @@
+
+2011-5-22
+install nodester
+
+[1] Register user name and password with coupon on the web. 
+    Got json response: {"status":"success"}
+
+[2] Build and install node.js 0.4.8 from tgz. 
+[3] git clone npm, and 'make install'. 
+
+[4] npm install nodester-cli -g
+/home/nodester/bin/node/bin/nodester -> /home/nodester/bin/node/lib/node_modules/nodester-cli/bin/nodester.js
+nodester-cli@0.2.13 /home/nodester/bin/node/lib/node_modules/nodester-cli 
+
+[5] nodester user setup <yourusername> <yourpasswd>
+
+[6] nodester app create nodedemo224
+nodester info creating app: nodedemo224 server.js
+nodester info successfully created app nodedemo224 to will run on port 10160 from server.js
+nodester info run nodester app init nodedemo224 to setup this app.
+
+[7] nodester app init nodedemo224.
+
+nodester info initializing git repo for nodedemo224 into folder nodedemo224
+nodester info cloning the repo git clone ec2-user@nodester.com:/node/hosted_apps/<yourusername>/2007-22707495f503f62c9231edbcc5a27698.git nodedemo224
+nodester info clone complete
+nodester info writing app data to config
+nodester info writing app files
+nodester info processing the initial commit
+node: ../src/node.cc:1342: v8::Handle<v8::Value> node::Cwd(const v8::Arguments&): Assertion `args.Length() == 0' failed.
+Aborted (core dumped)
+
+[8] git commit; git push origin master
+Use 'nodester app logs' to see log. Success!
+
