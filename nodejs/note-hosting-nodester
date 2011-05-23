@@ -1,0 +1,119 @@
+
+notes taken from nodester.com/api.html
+2011-5-22
+
+REST API
+Nodev.0.4.7 sandboxing. Run your own NPM modules using our NPM API!
+
+Coupon Request
+curl -X POST -d "email=your_address@gmail.com" http://nodester.com/coupon
+
+Status
+curl http://nodester.com/status
+
+Register
+cat ~/.ssh/id_rsa.pub | sed s/'+'/'%2B'/g | pbcopy
+curl -X POST -d
+"coupon=mycoupon&user=testuser&password=123&email=chris@nodester.com&rsakey=
+ssh-rsa AAAAB3NzaC1yc..." http://nodester.com/user
+
+Update User
+curl -X PUT -u "testuser:123" -d "password=234"
+http://api.nodester.com/user
+curl -X PUT -u "testuser:123" -d "rsakey=1234567"
+http://api.nodester.com/user
+
+Delete User
+curl -X DELETE -u "testuser:123" http://api.nodester.com/user
+
+Create App
+curl -X POST -u "testuser:123" -d "appname=a&start=hello.js"
+http://api.nodester.com/app
+
+Change App
+curl -X PUT -u "testuser:123" -d "appname=a&start=hello1.js"
+http://api.nodester.com/app
+or this with running=true|false:
+curl -X PUT -u "testuser:123" -d "appname=a&running=true"
+http://api.nodester.com/app
+
+Delete App
+curl -X DELETE -u "testuser:123" -d "appname=test"
+http://api.nodester.com/app
+
+App Info
+curl -u "testuser:123" http://api.nodester.com/app/appname
+
+Create Update Env (key/value pair)
+curl -X PUT -u "testuser:123" -d "appname=a&key=color&value=blue"
+http://api.nodester.com/env
+
+Delete Env
+curl -X DELETE -u "testuser:123" -d "appname=test&key=color"
+http://api.nodester.com/env
+
+Env Info
+curl -u "testuser:123" -d "appname=test&key=color"
+http://api.nodester.com/env
+
+All App Info
+curl -u "testuser:123" http://api.nodester.com/apps
+
+NPM
+curl -X POST -u "testuser:123" -d "appname=a&action=install&package=express"
+http://api.nodester.com/npm
+curl -X POST -u "testuser:123" -d "appname=a&action=update&package=express"
+http://api.nodester.com/npm
+curl -X POST -u "testuser:123" -d
+"appname=a&action=uninstall&package=express" http://api.nodester.com/npm
+
+App Domain 
+curl -X POST -u "testuser:123" -d "appname=test&domain=example.com"
+http://api.nodester.com/appdomains
+curl -X DELETE -u "testuser:123" -d "appname=test&domain=example.com"
+http://api.nodester.com/appdomains
+curl -u "testuser:123" http://api.nodester.com/appdomains
+
+Install CLI
+npm install nodester-cli
+
+Cli Commands
+nodester <command> <param1> <param2>
+
+Commands are:
+nodester coupon <email address>
+nodester user create <username> <password> <email address> <file containing
+ssh public key> <coupon code>
+nodester user setup <username> <password>
+
+The commands below require you to have run 'user setup' before/
+nodester user setpass <new password>
+
+You should run user setup after running setpass.
+nodester user setkey <file containing ssh public key>
+nodester apps list
+nodester app create <app-name> <initial js file>
+nodester app info <app-name>
+nodester app logs <app-name>
+nodester app start <app-name>
+nodester app restart <app-name>
+nodester app stop <app-name>
+nodester app gitreset <app-name>
+nodester npm install <app-name> <package name>
+nodester npm upgrade <app-name> <package name>
+nodester npm uninstall <app-name> <package name>
+nodester appdomain add <app-name> <domain-name>
+nodester appdomain delete <app-name> <domain-name>
+nodester appdomains
+
+
+Deployment
+curl -X POST -u "testuser:123" -d "appname=myapp&start=hello.js"
+http://api.nodester.com/app
+git remote add nodester the_url_returned_by_our_api
+git push nodester master
+
+Start App (once only at create, not update)
+curl -X PUT -u "testuser:123" -d "appname=myapp&running=true"
+http://api.nodester.com/app
+
