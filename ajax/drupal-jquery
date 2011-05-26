@@ -1,0 +1,34 @@
+
+drupal 7 jquery test:
+2011-5-25
+
+
+add this to drupal.js inside the function ($):
+==============================================
+
+$(document).ready(function(){
+  $('#test4div').click(function(){
+    $(this).addClass("new").fadeTo("slow",0.2);
+  });
+});
+
+
+add this to the page.tpl.php:
+=============================
+
+<div id="test4div"> <a href="#">Click to see the difference</a></div>
+<style type='text/css'>
+.new {
+  color: #963;
+  background: #eded11;
+}
+</style>
+
+
+test
+=====
+
+Click the href link, it will fade out.
+
+Or use "$(this).hide("slow")" to hide the href link.
+

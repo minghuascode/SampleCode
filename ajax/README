@@ -4,4 +4,5 @@ test2.html: ajax get google suggest by GET.
 test3.html: ajax get google suggest by POST.
 mouse-event.html: javascript mouse event.
 mouse-event2.html: press mouse to show element coordination.
+drupal-jquery:     press moust to hide a http link.
 
