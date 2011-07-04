@@ -1,0 +1,7 @@
+
+File source on 2011-7-4: 
+
+http://wijjo.com/passhash/passhash.html 
+
+See github.com/wijjo/PassHash for the firefox addon.
+
