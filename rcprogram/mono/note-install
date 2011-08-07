@@ -50,3 +50,13 @@ console hello.cs:
 gmcs hello.cs
 mono hello.exe
 
+
+Ubuntu
+================
+
+install bison mono-devel
+build and install mono
+build and install mono-basic
+
+run /home/to/mono/bin/mono DigitalRadio.exe
+
