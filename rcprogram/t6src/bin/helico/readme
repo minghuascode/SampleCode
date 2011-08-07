@@ -1,0 +1,5 @@
+programe pour programé un télécomande 
+
+si le fichier /bin/helico ne se lance pas recompiler avec les commandes
+make clean
+make

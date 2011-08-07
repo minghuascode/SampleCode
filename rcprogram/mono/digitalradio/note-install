@@ -1,0 +1,19 @@
+
+2011-8-6:
+
+
+DigitalRadio.pdf:
+=================
+
+On ubuntu, add to loader.conf:
+ uplcom_load="YES".
+
+Download the Visual Basic 2005 runtime libraries for Mono 
+from mono repository http://badgerports.org
+
+
+On Fedora:
+===========
+
+See the note-install in mono directory. 
+

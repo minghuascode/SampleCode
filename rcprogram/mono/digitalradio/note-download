@@ -1,0 +1,39 @@
+
+http://www.sgr.info/usbradio/download.htm
+2011-8-6:
+
+Download
+=========
+Download Digital Radio 1.0.3
+
+This is the demo version and has some limits for the normal use.
+To get the latest version with no limit please register.
+
+You may freely copy and distribute Digital Radio Demo Version 1.0.3
+Only the unmodified zipped (the package) file may be distributed or copied.
+You are prohibited from:
+
+    * Charging a fee or requesting donations for the package
+    * Distributing/including the package in commercial products different from shareware/freeware collections
+    * Modifying or reverse engineering the package
+
+You can distribute the package in shareware/freeware collections (on web site/CD ROM)
+
+Install
+
+   1. Install the USB cable driver if not present
+   2. Decompress the zipped file into a directory
+   3. Run DigitalRadio.exe
+
+
+To uninstall Digital Radio:
+
+    * Delete the directory where you have decompressed the zipped file
+    * The DigitalRadio folder created in your Application Data folder
+
+Digital Radio doesn't write registry keys or files on hard disk in system directories. 
+
+Copyright © 2011
+Stefano Grassi
+Last update: 27 March 2011
+

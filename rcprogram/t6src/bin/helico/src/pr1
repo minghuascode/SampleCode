@@ -1,0 +1,911 @@
+  1 /*
+  2         Copyright 2008 Fourquier Simon
+  3 
+  4         This file is part of Confiture.
+  5 
+  6         Confiture is free software: you can redistribute it and/or modify
+  7         it under the terms of the GNU General Public License as published by
+  8         the Free Software Foundation, either version 3 of the License, or
+  9         (at your option) any later version.
+ 10 
+ 11         Confiture is distributed in the hope that it will be useful,
+ 12         but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 13         MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 14         GNU General Public License for more details.
+ 15 
+ 16         You should have received a copy of the GNU General Public License
+ 17         along with Confiture.  If not, see <http://www.gnu.org/licenses/>
+ 18 
+ 19 */
+ 20 
+ 21 #include "mainwindowimpl.h"
+ 22 #include "tab.h"
+ 23 //
+ 24 MainWindowImpl::MainWindowImpl( QWidget * parent, Qt::WFlags f) 
+ 25         : QMainWindow(parent, f)
+ 26 {	
+ 27     setupUi(this);
+ 28 
+ 29     port = new QextSerialPort();
+ 30 
+ 31     TreadRead=new MYTreadReadUart(this);
+ 32     connect( TreadRead, SIGNAL( SignalsDrawChannel() ),this, SLOT( DrawChannel() ) );
+ 33 
+ 34     for(int x=0;x<6;x++)
+ 35     {
+ 36         LabFinDeCourse[x] = new QLabel(FinDeCourse);
+ 37         ((QGridLayout*)(FinDeCourse->layout()))->addWidget(LabFinDeCourse[x],0,x);
+ 38         LabFinDeCourse[x]->setNum(x+1);
+ 39         LabFinDeCourse[x]->setAlignment(Qt::AlignHCenter);
+ 40         for(int y=0;y<2;y++)
+ 41         {
+ 42             SlidFinDeCourse[x][y] = new QSlider(FinDeCourse);
+ 43             ((QGridLayout*)(FinDeCourse->layout()))->addWidget(SlidFinDeCourse[x][y],2+y,x);
+ 44             SlidFinDeCourse[x][y]->setOrientation(Qt::Vertical);
+ 45             SlidFinDeCourse[x][y]->setMaximum(120);
+ 46             SlidFinDeCourse[x][y]->setProperty("num",x);
+ 47             SlidFinDeCourse[x][y]->setProperty("haut_bas",y);
+ 48             if(y==0)
+ 49             {
+ 50                 SlidFinDeCourse[x][y]->setValue(120);
+ 51             }
+ 52             else
+ 53             {
+ 54                 SlidFinDeCourse[x][y]->setValue(0);
+ 55             }
+ 56 
+ 57             LabValFinDeCourse[x][y] = new QLabel(FinDeCourse);
+ 58             LabValFinDeCourse[x][y]->setMinimumWidth(25);
+ 59             ((QGridLayout*)(FinDeCourse->layout()))->addWidget(LabValFinDeCourse[x][y],1+y*3,x);
+ 60             LabValFinDeCourse[x][y]->setText("120");
+ 61             LabValFinDeCourse[x][y]->setAlignment(Qt::AlignHCenter);
+ 62             connect( SlidFinDeCourse[x][y], SIGNAL( valueChanged(int) ), this, SLOT( FinDeCourseValueChanged(int) ) );
+ 63         }
+ 64     }
+ 65 
+ 66     for(int y=0;y<3;y++)
+ 67     {
+ 68         LabDR[y] = new QLabel(DR);
+ 69         ((QGridLayout*)(DR->layout()))->addWidget(LabDR[y],0,y);
+ 70         LabDR[y]->setMinimumWidth(25);
+ 71         if(y<2)
+ 72         {
+ 73             LabDR[y]->setNum(y+1);
+ 74         }
+ 75         else
+ 76         {
+ 77             LabDR[y]->setNum(4);
+ 78         }
+ 79         LabDR[y]->setAlignment(Qt::AlignHCenter);
+ 80 
+ 81         for(int x=0;x<2;x++)
+ 82         {
+ 83 
+ 84             LabValDR[x][y] = new QLabel(DR);
+ 85             ((QGridLayout*)(DR->layout()))->addWidget(LabValDR[x][y],1+x*3,y);
+ 86             LabValDR[x][y]->setText("60");
+ 87             LabValDR[x][y]->setAlignment(Qt::AlignHCenter);
+ 88 
+ 89             SlidDR[x][y] = new QSlider(DR);
+ 90             ((QGridLayout*)(DR->layout()))->addWidget(SlidDR[x][y],2+x,y);
+ 91             SlidDR[x][y]->setMaximum(100);
+ 92             SlidDR[x][y]->setMinimum(0);
+ 93             SlidDR[x][y]->setValue(60);
+ 94             SlidDR[x][y]->setProperty("num",y);
+ 95             SlidDR[x][y]->setProperty("nor_id",x);
+ 96             connect( SlidDR[x][y], SIGNAL( valueChanged(int) ), this, SLOT( DRValueChanged(int) ) );
+ 97         }
+ 98     }
+ 99 
+100     for(int x=0;x<6;x++)
+101     {
+102         LabTrime[x] = new QLabel(Trime);
+103         ((QGridLayout*)(Trime->layout()))->addWidget(LabTrime[x],0,x);
+104         LabTrime[x]->setMinimumWidth(30);
+105         LabTrime[x]->setNum(x+1);
+106         LabTrime[x]->setAlignment(Qt::AlignHCenter);
+107 
+108         LabValTrime[x] = new QLabel(Trime);
+109         ((QGridLayout*)(Trime->layout()))->addWidget(LabValTrime[x],1,x);
+110         LabValTrime[x]->setText("0");
+111         LabValTrime[x]->setAlignment(Qt::AlignHCenter);
+112 
+113         SlidTrime[x] = new QSlider(Trime);
+114         ((QGridLayout*)(Trime->layout()))->addWidget(SlidTrime[x],2,x);
+115         SlidTrime[x]->setMaximum(120);
+116         SlidTrime[x]->setMinimum(-120);
+117         SlidTrime[x]->setValue(0);
+118         SlidTrime[x]->setProperty("num",x);
+119         connect( SlidTrime[x], SIGNAL( valueChanged(int) ), this, SLOT( TrimeValueChanged(int) ) );
+120     }
+121 
+122     for(int x=0;x<3;x++)
+123     {
+124         LabDebatement[x] = new QLabel(Debatement);
+125         ((QGridLayout*)(Debatement->layout()))->addWidget(LabDebatement[x],0,x);
+126         LabDebatement[x]->setMinimumWidth(25);
+127         LabDebatement[x]->setNum(x+1);
+128         LabDebatement[x]->setAlignment(Qt::AlignHCenter);
+129 
+130         LabValDebatement[x] = new QLabel(Debatement);
+131         ((QGridLayout*)(Debatement->layout()))->addWidget(LabValDebatement[x],1,x);
+132         LabValDebatement[x]->setText("60");
+133         LabValDebatement[x]->setAlignment(Qt::AlignHCenter);
+134 
+135         SlidDebatement[x] = new QSlider(Debatement);
+136         ((QGridLayout*)(Debatement->layout()))->addWidget(SlidDebatement[x],2,x);
+137         SlidDebatement[x]->setMaximum(100);
+138         SlidDebatement[x]->setMinimum(0);
+139         SlidDebatement[x]->setValue(60);
+140         SlidDebatement[x]->setProperty("num",x);
+141         connect( SlidDebatement[x], SIGNAL( valueChanged(int) ), this, SLOT( DebatementValueChanged(int) ) );
+142     }
+143 
+144     for(int x=0;x<6;x++)
+145     {
+146         LabCheckInverseur[x] = new QLabel(Inverseur);
+147         ((QGridLayout*)(Inverseur->layout()))->addWidget(LabCheckInverseur[x],0,x);
+148         LabCheckInverseur[x]->setNum(x+1);
+149         LabCheckInverseur[x]->setAlignment(Qt::AlignHCenter);
+150         CheckInverseur[x] = new QCheckBox(Inverseur);
+151         ((QGridLayout*)(Inverseur->layout()))->addWidget(CheckInverseur[x],1,x);
+152         CheckInverseur[x]->setProperty("num",x);
+153         CheckInverseur[x]->setMaximumWidth(24);
+154         connect( CheckInverseur[x], SIGNAL( stateChanged(int) ), this, SLOT( InverseurStateChanged(int) ) );
+155     }
+156 
+157     for(int x=0;x<2;x++)
+158     {
+159         for(int y=0;y<5;y++)
+160         {
+161             SpinGrapheMoteur[x][y] = new QSpinBox(gBmoteur);
+162             ((QGridLayout*)(GridMoteur->layout()))->addWidget(SpinGrapheMoteur[x][y],y+1,x);
+163             SpinGrapheMoteur[x][y]->setMaximum(100);
+164             SpinGrapheMoteur[x][y]->setValue(100/4*y);
+165             SpinGrapheMoteur[x][y]->setProperty("num",y);
+166             SpinGrapheMoteur[x][y]->setProperty("nor_id",x);
+167             connect( SpinGrapheMoteur[x][y], SIGNAL( valueChanged(int) ), this, SLOT( GrapheMoteurValueChanged(int) ) );
+168         }
+169     }
+170     for(int x=0;x<2;x++)
+171     {
+172         for(int y=0;y<5;y++)
+173         {
+174             SpinGraphePas[x][y] = new QSpinBox(Gpas);
+175             ((QGridLayout*)(GridPas->layout()))->addWidget(SpinGraphePas[x][y],y+1,x);
+176             SpinGraphePas[x][y]->setMaximum(100);
+177             SpinGraphePas[x][y]->setValue(100/4*y);
+178             SpinGraphePas[x][y]->setProperty("num",y);
+179             SpinGraphePas[x][y]->setProperty("nor_id",x);
+180             connect( SpinGraphePas[x][y], SIGNAL( valueChanged(int) ), this, SLOT( GraphePasValueChanged(int) ) );
+181         }
+182     }
+183 
+184 
+185     #define NB_ELEM_Y 7
+186     for(int x=0;x<3;x++)
+187     {
+188         LabMixSource[x] = new QLabel(Mix);
+189         LabMixSource[x]->setText("Source");
+190         LabMixSource[x]->setAlignment(Qt::AlignBottom);
+191         ((QGridLayout*)(Mix->layout()))->addWidget(LabMixSource[x],x*NB_ELEM_Y,0);
+192         MixSource[x] = new QComboBox(Mix);
+193         ((QGridLayout*)(Mix->layout()))->addWidget(MixSource[x],x*NB_ELEM_Y+1,0);
+194         for(int l=0;l<6;l++)
+195         {
+196             MixSource[x]->addItem("CH"+QString().setNum(l+1),QVariant(l));
+197         }
+198         MixSource[x]->addItem("WR A",QVariant(6));
+199         MixSource[x]->addItem("WR B",QVariant(7));
+200         MixSource[x]->setProperty("num",x);
+201         connect( MixSource[x], SIGNAL( currentIndexChanged(int) ), this, SLOT( FoncMixSource(int) ) );
+202         LabMixDestination[x] = new QLabel(Mix);
+203         LabMixDestination[x]->setText("Destination");
+204         LabMixDestination[x]->setAlignment(Qt::AlignBottom);
+205         ((QGridLayout*)(Mix->layout()))->addWidget(LabMixDestination[x],x*NB_ELEM_Y,1);
+206         MixDestination[x] = new QComboBox(Mix);
+207         ((QGridLayout*)(Mix->layout()))->addWidget(MixDestination[x],x*NB_ELEM_Y+1,1);
+208         for(int l=0;l<6;l++)
+209         {
+210             MixDestination[x]->addItem("CH"+QString().setNum(l+1),QVariant(l));
+211         }
+212 
+213         MixDestination[x]->setProperty("num",x);
+214         connect( MixDestination[x], SIGNAL( currentIndexChanged(int) ), this, SLOT( FoncMixDestination(int) ) );
+215         LabMixPositif[x] = new QLabel(Mix);
+216         LabMixPositif[x]->setText("Positif");
+217         LabMixPositif[x]->setAlignment(Qt::AlignBottom);
+218         ((QGridLayout*)(Mix->layout()))->addWidget(LabMixPositif[x],x*NB_ELEM_Y+2,0);
+219         MixPositif[x] = new QSpinBox(Mix);
+220         ((QGridLayout*)(Mix->layout()))->addWidget(MixPositif[x],x*NB_ELEM_Y+3,0);
+221         MixPositif[x]->setMaximum(100);
+222         MixPositif[x]->setMinimum(-100);
+223         MixPositif[x]->setProperty("num",x);
+224         connect( MixPositif[x], SIGNAL( valueChanged(int) ), this, SLOT( FoncMixPositif(int) ) );
+225 
+226         LabMixNegatif[x] = new QLabel(Mix);
+227         LabMixNegatif[x]->setText("Negatif");
+228         LabMixNegatif[x]->setAlignment(Qt::AlignBottom);
+229         ((QGridLayout*)(Mix->layout()))->addWidget(LabMixNegatif[x],x*NB_ELEM_Y+2,1);
+230         MixNegatif[x] = new QSpinBox(Mix);
+231         ((QGridLayout*)(Mix->layout()))->addWidget(MixNegatif[x],x*NB_ELEM_Y+3,1);
+232         MixNegatif[x]->setMaximum(100);
+233         MixNegatif[x]->setMinimum(-100);
+234         MixNegatif[x]->setProperty("num",x);
+235         connect( MixNegatif[x], SIGNAL( valueChanged(int) ), this, SLOT( FoncMixNegatif(int) ) );
+236 
+237         LabMixInterupteur[x] = new QLabel(Mix);
+238         LabMixInterupteur[x]->setText("Interupteur");
+239         LabMixInterupteur[x]->setAlignment(Qt::AlignBottom);
+240         ((QGridLayout*)(Mix->layout()))->addWidget(LabMixInterupteur[x],x*NB_ELEM_Y+4,0,1,2);
+241         MixInterupteur[x] = new QComboBox(Mix);
+242         ((QGridLayout*)(Mix->layout()))->addWidget(MixInterupteur[x],x*NB_ELEM_Y+5,0,1,2);
+243         MixInterupteur[x]->addItem("Interrupteur A");
+244         MixInterupteur[x]->addItem("Interrupteur B");
+245         MixInterupteur[x]->addItem("ON");
+246         MixInterupteur[x]->addItem("OFF");
+247         MixInterupteur[x]->setCurrentIndex(3);
+248         MixInterupteur[x]->setProperty("num",x);
+249         connect( MixInterupteur[x], SIGNAL( currentIndexChanged(int) ), this, SLOT( FoncMixInterupteur(int) ) );
+250 
+251         if(x<2)
+252         {
+253             Line[x] = new QFrame(Mix);
+254             ((QGridLayout*)(Mix->layout()))->addWidget(Line[x],x*NB_ELEM_Y+6,0,1,2);
+255             Line[x]->setFrameShape(QFrame::HLine);
+256             Line[x]->setFrameShadow(QFrame::Sunken);
+257             Line[x]->setMinimumHeight(20);
+258         }
+259     }
+260 
+261     for(int x=0;x<6;x++)
+262     {
+263         LabCannal[x] = new QLabel(Cannal);
+264         ((QGridLayout*)(Cannal->layout()))->addWidget(LabCannal[x],x*3,0);
+265         LabCannal[x]->setNum(x+1);
+266         LabCannal[x]->setAlignment(Qt::AlignHCenter);
+267 
+268         QbCannal[x] = new QProgressBar (Cannal);
+269         ((QGridLayout*)(Cannal->layout()))->addWidget(QbCannal[x],x*3+1,0);
+270         QbCannal[x]->setMaximum(1024);
+271         QbCannal[x]->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Fixed);
+272 
+273         QsCannal[x] = new QSpacerItem(10, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+274         ((QGridLayout*)(Cannal->layout()))->addItem(QsCannal[x],x*3+2,0);
+275     }
+276 
+277     Type->addItem("Avion",QVariant(0));
+278     Type->addItem("Heli 120",QVariant(1));
+279     Type->addItem("Heli 90",QVariant(2));
+280     Type->addItem("Heli 140",QVariant(3));
+281     connect( Type, SIGNAL( currentIndexChanged (int) ), this, SLOT( TypeCurrentIndexChanged(int) ) );
+282 
+283     Mode->addItem("Mode 1",QVariant(0));
+284     Mode->addItem("Mode 2",QVariant(1));
+285     Mode->addItem("Mode 3",QVariant(2));
+286     Mode->addItem("Mode 4",QVariant(3));
+287     connect( Mode, SIGNAL( currentIndexChanged (int) ), this, SLOT( ModeCurrentIndexChanged(int) ) );
+288 
+289     InterupteurA->addItem("OFF",QVariant(0));
+290     InterupteurA->addItem("DR",QVariant(1));
+291     InterupteurA->addItem("ThroCut",QVariant(2));
+292     InterupteurA->addItem("NOR-ID",QVariant(3));
+293     connect( InterupteurA, SIGNAL( currentIndexChanged(int) ), this, SLOT( FoncInterupteurA(int) ) );
+294     InterupteurB->addItem("OFF",QVariant(0));
+295     InterupteurB->addItem("DR",QVariant(1));
+296     InterupteurB->addItem("ThroCut",QVariant(2));
+297     InterupteurB->addItem("Nor-ID",QVariant(3));
+298     connect( InterupteurB, SIGNAL( currentIndexChanged(int) ), this, SLOT( FoncInterupteurB(int) ) );
+299     PotA->addItem("OFF",QVariant(0));
+300     PotA->addItem("Pith Adjust",QVariant(1));
+301     connect( PotA, SIGNAL( currentIndexChanged(int) ), this, SLOT( FoncPotA(int) ) );
+302     PotB->addItem("OFF",QVariant(0));
+303     PotB->addItem("Pith Adjust",QVariant(1));
+304     connect( PotB, SIGNAL( currentIndexChanged(int) ), this, SLOT( FoncPotB(int) ) );
+305     connect( TimeEnvoyer, SIGNAL( timeChanged(const QTime &) ), this, SLOT( FoncTimeEnvoyer(const QTime &) ) );
+306     timer = new QTimer(this);
+307     connect( timer, SIGNAL(timeout()), this, SLOT( FoncEnvoyer() ) );
+308     connect( CBPort, SIGNAL( editTextChanged(const QString &) ), this, SLOT( FoncNewCBPort(const QString &) ) );
+309     connect( Envoyer, SIGNAL( released() ), this, SLOT( FoncEnvoyer() ) );
+310 
+311     connect( actionCharger, SIGNAL( triggered() ), this, SLOT( FoncCharger() ) );
+312     connect( actionEnregistr, SIGNAL( triggered() ), this, SLOT( FoncEnregistr() ) );
+313     connect( actionEnregistrerSous, SIGNAL( triggered() ), this, SLOT( FoncEnregistrSous() ) );
+314     connect( actionImporter, SIGNAL( triggered() ), this, SLOT( FoncImport() ) );
+315     connect( actionExporter, SIGNAL( triggered() ), this, SLOT( FoncExport() ) );
+316     connect( actionExporter, SIGNAL( triggered() ), this, SLOT( FoncExport() ) );
+317     connect( actionA_propos, SIGNAL( triggered() ), this, SLOT( FoncA_propos() ) );
+318 
+319     connect(  CheckInverseur[2], SIGNAL( stateChanged( int ) ), this, SLOT( StateChangedInverseur3( int ) ) );
+320 
+321     setTabOrder(Type, Mode);
+322     setTabOrder(Mode, InterupteurA);
+323     setTabOrder(InterupteurA, InterupteurB);
+324     setTabOrder(InterupteurB, PotA);
+325     setTabOrder(PotA, PotB);
+326     setTabOrder(PotB, CBPort);
+327     setTabOrder(CBPort, Envoyer);
+328     setTabOrder(Envoyer, TimeEnvoyer);
+329 
+330     QFile file(QDir::home().path()+"/.confiture");
+331     file.open(QIODevice::ReadOnly);
+332     temp=file.read(500);
+333     if(temp=="")
+334     {
+335         fichier_courant=QDir::home().path();
+336     }
+337     else
+338     {
+339         fichier_courant=QString(temp);
+340         load(fichier_courant,0);
+341     }
+342 #ifndef _TTY_POSIX_
+343     QApplication::setStyle("plastique");
+344 
+345     CBPort->setEditable(0);
+346     CBPort->clear();
+347     for(int l=1;l<=9;l++)
+348     {
+349         CBPort->addItem("COM"+QString().setNum(l));
+350     }
+351 #endif
+352     CBPort->setEditText(file.read(500));
+353 
+354     SceneMoteur = new QGraphicsScene();
+355     ViewMoteur = new QGraphicsView (SceneMoteur);
+356     ViewMoteur->setParent(GraphMoteur);
+357     ViewMoteur->setRenderHints(QPainter::Antialiasing);
+358     for(int x=0;x<5;x++)
+359     {
+360         SceneMoteur->addItem(&LineGrilleMoteur[0][x]);
+361         SceneMoteur->addItem(&LineGrilleMoteur[1][x]);
+362     }
+363     for(int x=0;x<4;x++)
+364     {
+365         SceneMoteur->addItem(&LineGrapheMoteur[0][x]);
+366         LineGrapheMoteur[0][x].setPen(QPen(QColor(Qt::blue)));
+367         SceneMoteur->addItem(&LineGrapheMoteur[1][x]);
+368         LineGrapheMoteur[1][x].setPen(QPen(QColor(Qt::red)));
+369     }
+370     SceneMoteur->setSceneRect(0,0,121,121);
+371 
+372     ScenePas = new QGraphicsScene();
+373     ViewPas = new QGraphicsView (ScenePas);
+374     ViewPas->setParent(GraphPas);
+375     ViewPas->setRenderHints(QPainter::Antialiasing);
+376     for(int x=0;x<5;x++)
+377     {
+378         ScenePas->addItem(&LineGrillePas[0][x]);
+379         ScenePas->addItem(&LineGrillePas[1][x]);
+380     }
+381     for(int x=0;x<4;x++)
+382     {
+383         ScenePas->addItem(&LineGraphePas[0][x]);
+384         LineGraphePas[0][x].setPen(QPen(QColor(Qt::blue)));
+385         ScenePas->addItem(&LineGraphePas[1][x]);
+386         LineGraphePas[1][x].setPen(QPen(QColor(Qt::red)));
+387     }
+388     ScenePas->setSceneRect(0,0,121,121);
+389 
+390     FoncNewCBPort(CBPort->currentText());
+391 
+392     GrapheMoteurValueChanged(-1);
+393     GraphePasValueChanged(-1);
+394 }
+395 
+396 MYTreadReadUart::MYTreadReadUart(QObject *parent)
+397 {
+398     setParent(parent);
+399 }
+400 
+401 void MainWindowImpl::DrawChannel()
+402 {
+403     for(int l=0;l<6;l++)
+404     {
+405         QbCannal[l]->setValue(channel[l]);
+406     }
+407 }
+408 
+409 void MainWindowImpl::StateChangedInverseur3( int state)
+410 {
+411     timer->stop();
+412     if(state && QMessageBox::warning(this, "atention",
+413                                 QString::fromUtf8("Êtes vous sûr de vouloir modifier l'inversion du cannal 3. \nCela pourrait faire démarrer le moteur."),
+414                                 QMessageBox::Yes|QMessageBox::No,
+415                                 QMessageBox::No)==QMessageBox::No)
+416     {
+417       CheckInverseur[2]->setCheckState(Qt::Unchecked);
+418     }
+419     timer->start();
+420 }
+421 
+422 void MainWindowImpl::FoncNewCBPort(const QString & text)
+423 {
+424     TreadRead->stop=1;
+425     while(TreadRead->isRunning());
+426     if(port->isOpen())
+427         port->close();
+428     port->setPortName(text);
+429     port->setBaudRate(BAUD115200);
+430     port->setFlowControl(FLOW_OFF);
+431     port->setParity(PAR_NONE);
+432     port->setDataBits(DATA_8);
+433     port->setStopBits(STOP_1);
+434     port->setTimeout(0,1);
+435     port->open(QIODevice::ReadWrite);
+436     if(port->isOpen())
+437     {
+438         TreadRead->start();
+439         TreadRead->setPriority(QThread::LowestPriority);
+440         statusbar->showMessage("Port ouvert");
+441     }
+442     else
+443     {
+444         statusbar->showMessage(QString::fromUtf8("Port fermé"));
+445     }
+446 }
+447 
+448 void MYTreadReadUart::run()
+449 {
+450     QString string("");
+451     char DataR[100];
+452     unsigned int NbData;
+453     unsigned int start=0;
+454     int numdata=0;
+455     int val;
+456     stop=0;
+457     while(!stop)
+458     {
+459         usleep(1);
+460         NbData=((MainWindowImpl*)parent())->port->read(DataR,100);
+461         for(int l=0;l<NbData;l++)
+462         {
+463             if((start==1) && ((unsigned char)DataR[l]==0xFC))
+464             {
+465                 start=2;
+466                 string="";
+467                 numdata=0;
+468             }
+469             if((unsigned char)DataR[l]==0x55 && start==0)
+470                 start=1;
+471 
+472             if((start==2) && (string.length()<30))
+473             {
+474                 if((numdata-1)%2==0)
+475                 {
+476                     val=(unsigned char)DataR[l]<<8;
+477                 }
+478                 else
+479                 {
+480                     val+=(unsigned char)DataR[l];
+481                     ((MainWindowImpl*)parent())->channel[(numdata-1)/2]=(val-1000);
+482                     if((numdata-1)/2>=5)
+483                     {
+484                         emit SignalsDrawChannel();
+485                         start=0;
+486                     }
+487 
+488                 }
+489                 numdata++;
+490             }
+491         }
+492     }
+493 }
+494 
+495 
+496 void MainWindowImpl::FinDeCourseValueChanged(int val)
+497 {
+498     int x=((QSlider*)sender())->property("num").toInt();
+499     int y=((QSlider*)sender())->property("haut_bas").toInt();
+500     if(y==0)
+501     {
+502         LabValFinDeCourse[x][y]->setNum(val);
+503         tab[13+y+x*2]=val;
+504     }
+505     else
+506     {
+507         LabValFinDeCourse[x][y]->setNum(120-val);
+508         tab[13+y+x*2]=120-val;
+509     }
+510 
+511 }
+512 
+513 void MainWindowImpl::GrapheMoteurValueChanged(int val)
+514 {
+515     int num;
+516     int nor_id;
+517     QPointF pointsMoteur[2][5];
+518 
+519     if(val>=0)
+520     {
+521         num=((QSlider*)sender())->property("num").toInt();
+522         nor_id=((QSlider*)sender())->property("nor_id").toInt();
+523         tab[25+nor_id+num*2]=val;
+524     }
+525     for(int x=0;x<5;x++)
+526     {
+527         for(int y=0;y<2;y++)
+528         {
+529             pointsMoteur[y][x]=QPointF((int)(GraphMoteur->geometry().width()-5)/4.0*x,
+530                                        (int)(GraphMoteur->geometry().height()-5)/100.0*(100-tab[25+y+x*2]));
+531         }
+532     }
+533     DrawGraphe(pointsMoteur, LineGrilleMoteur, LineGrapheMoteur);
+534 }
+535 
+536 
+537 
+538 void MainWindowImpl::DrawGraphe(QPointF points[2][5], QGraphicsLineItem LineGrille[2][5],QGraphicsLineItem LineGraphe[2][4])
+539 {
+540     for(int x=0;x<5;x++)
+541     {
+542         LineGrille[0][x].setLine(((GraphPas->geometry().width()-5)/4.0*x)+0.5,
+543                                  0,
+544                                  ((GraphPas->geometry().width()-5)/4.0*x)+0.5,
+545                                  (int)((GraphPas->geometry().height()-5)));
+546         LineGrille[1][x].setLine(0,
+547                                  (int)(GraphPas->geometry().height()-5)/4.0*x+0.5,
+548                                  (int)(GraphPas->geometry().width()-5),
+549                                  (int)(GraphPas->geometry().height()-5)/4.0*x+0.5);
+550     }
+551     for(int x=0;x<4;x++)
+552     {
+553         LineGraphe[0][x].setLine((int)points[0][x].x(),(int)points[0][x].y(),(int)points[0][x+1].x(),(int)points[0][x+1].y());
+554         LineGraphe[1][x].setLine((int)points[1][x].x(),(int)points[1][x].y(),(int)points[1][x+1].x(),(int)points[1][x+1].y());
+555     }
+556 }
+557 
+558 void MainWindowImpl::GraphePasValueChanged(int val)
+559 {
+560     int num;
+561     int nor_id;
+562     QPointF pointsPas[2][5];
+563 
+564     if(val>=0)
+565     {
+566         num=((QSlider*)sender())->property("num").toInt();
+567         nor_id=((QSlider*)sender())->property("nor_id").toInt();
+568         tab[35+nor_id+num*2]=val;
+569     }
+570     for(int x=0;x<5;x++)
+571     {
+572         for(int y=0;y<2;y++)
+573         {
+574             pointsPas[y][x]=QPointF((int)(GraphPas->geometry().width()-5)/4.0*x,
+575                                     (int)(GraphPas->geometry().height()-5)/100.0*(100-tab[35+y+x*2]));
+576         }
+577     }
+578     DrawGraphe(pointsPas,LineGrillePas,LineGraphePas);
+579 }
+580 
+581 void  MainWindowImpl::InverseurStateChanged(int val)
+582 {
+583     int num=((QSlider*)sender())->property("num").toInt();
+584     if(val)
+585         tab[3]|=0x01<<num;
+586     else
+587         tab[3]&=~(0x01<<num);
+588 }
+589 
+590 void MainWindowImpl::TrimeValueChanged(int val)
+591 {
+592     int num=((QSlider*)sender())->property("num").toInt();
+593     tab[45+num]=val;
+594     printf("%x %x\n",val,tab[45+num]);
+595     LabValTrime[num]->setNum(val);
+596 }
+597 
+598 void MainWindowImpl::TypeCurrentIndexChanged(int val)
+599 {
+600     tab[2]=(tab[2]&0xF0)|val;
+601 }
+602 
+603 void MainWindowImpl::ModeCurrentIndexChanged(int val)
+604 {
+605     tab[2]=(tab[2]&0x0F)|(val<<4);
+606 }
+607 
+608 void MainWindowImpl::FoncInterupteurA(int val)
+609 {
+610     tab[63]=val;
+611 }
+612 void MainWindowImpl::FoncInterupteurB(int val)
+613 {
+614     tab[64]=val;
+615 }
+616 void MainWindowImpl::FoncPotA(int val)
+617 {
+618     tab[65]=val;
+619 }
+620 void MainWindowImpl::FoncPotB(int val)
+621 {
+622     tab[66]=val;
+623 }
+624 
+625 void MainWindowImpl::FoncMixSource(int val)
+626 {
+627     int num=((QSlider*)sender())->property("num").toInt();
+628     tab[51+num*4]=(tab[51+num*4]&0x0F)|(val<<4);
+629 }
+630 
+631 void MainWindowImpl::FoncMixDestination(int val)
+632 {
+633     int num=((QSlider*)sender())->property("num").toInt();
+634     tab[51+num*4]=(tab[51+num*4]&0xF0)|val;
+635 }
+636 
+637 void MainWindowImpl::FoncMixPositif(int val)
+638 {
+639     int num=((QSlider*)sender())->property("num").toInt();
+640     tab[52+num*4]=val;
+641 }
+642 
+643 void MainWindowImpl::FoncMixNegatif(int val)
+644 {
+645     int num=((QSlider*)sender())->property("num").toInt();
+646     tab[53+num*4]=val;
+647 }
+648 
+649 void MainWindowImpl::FoncMixInterupteur(int val)
+650 {
+651     int num=((QSlider*)sender())->property("num").toInt();
+652     tab[54+num*4]=val;
+653 }
+654 
+655 void MainWindowImpl::FoncTimeEnvoyer(const QTime & val)
+656 {
+657     if(QTime().msecsTo(val)>0)
+658     {
+659         if(QTime().msecsTo(val)<200)
+660            timer->start(200);
+661         else
+662             timer->start(QTime().msecsTo(val));
+663     }
+664     else
+665     {
+666         timer->stop();
+667     }
+668 }
+669 
+670 void MainWindowImpl::DebatementValueChanged(int val)
+671 {
+672     int num=((QSlider*)sender())->property("num").toInt();
+673     tab[10+num]=val;
+674     LabValDebatement[num]->setNum(val);
+675 }
+676 
+677 void MainWindowImpl::DRValueChanged(int val)
+678 {
+679     int num=((QSlider*)sender())->property("num").toInt();
+680     int nor_id=((QSlider*)sender())->property("nor_id").toInt();
+681     tab[4+nor_id+num*2]=val;
+682     LabValDR[nor_id][num]->setNum(val);
+683 }
+684 
+685 void MainWindowImpl::FoncCharger()
+686 {
+687     QString chem;
+688     chem = QFileDialog::getOpenFileName(this, "Open file", fichier_courant, "config (*.cft);; All (*)");
+689     if(chem!=NULL)
+690     {
+691         load(chem,0);
+692         fichier_courant=chem;
+693     }
+694 }
+695 
+696 void MainWindowImpl::FoncEnregistr()
+697 {
+698     QString chem;
+699     if(fichier_courant.right(4)!=".cft")
+700     {
+701         chem = QFileDialog::getSaveFileName(this, "Open file", fichier_courant, "config (*.cft)");
+702     }
+703     else
+704     {
+705         chem = fichier_courant;
+706     }
+707     if(chem!=NULL)
+708     {
+709         save(chem,0);
+710         fichier_courant=chem;
+711     }
+712 }
+713 
+714 void MainWindowImpl::FoncEnregistrSous()
+715 {
+716     QString chem;
+717     chem = QFileDialog::getSaveFileName(this, "Open file", fichier_courant, "config (*.cft)" ,0 ,QFileDialog::DontConfirmOverwrite);
+718     if((chem!=NULL)&&(chem.right(4)!=".cft"))
+719         chem+=".cft";
+720     if(QFile::exists(chem))
+721     {
+722         if(QMessageBox::warning(this, "atention",
+723                                 "le fichier existe deja voulez vous le remplacer?",
+724                                 QMessageBox::Ok|QMessageBox::Cancel,
+725                                 QMessageBox::Ok)==QMessageBox::Cancel)
+726             chem.clear();
+727     }
+728     if(chem!=NULL)
+729     {
+730         if(chem.right(4)!=".cft")
+731             chem+=".cft";
+732         save(chem,0);
+733         fichier_courant=chem;
+734     }
+735 }
+736 
+737 void MainWindowImpl::FoncImport()
+738 {
+739     QString chem;
+740     chem = QFileDialog::getOpenFileName(this, "Open file", fichier_courant, "All (*)");
+741     if(chem!=NULL)
+742     {
+743         load(chem,1);
+744     }
+745 }
+746 
+747 void MainWindowImpl::FoncExport()
+748 {
+749     QString chem;
+750     chem = QFileDialog::getSaveFileName(this, "Open file", fichier_courant, "all (*.*)");
+751     if(chem!=NULL)
+752     {
+753         save(chem,1);
+754     }
+755 }
+756 
+757 void MainWindowImpl::save(QString chem,bool export_)
+758 {
+759     QFile file(chem);
+760     file.open(QIODevice::WriteOnly);
+761     if(export_)
+762     {
+763         if(file.write(tab+2,65)!=65)
+764             QMessageBox::warning(this, QString::fromUtf8("Érreur"),
+765                                  tr("Impossible d'enregistrer!"),
+766                                  QMessageBox::Ok,
+767                                  QMessageBox::Ok);
+768     }
+769     else
+770     {
+771         if(file.write(tab,69)!=69)
+772             QMessageBox::warning(this, QString::fromUtf8("Érreur"),
+773                                  tr("Impossible d'enregistrer!"),
+774                                  QMessageBox::Ok,
+775                                  QMessageBox::Ok);
+776     }
+777 }
+778 
+779 bool MainWindowImpl::load(QString chem,bool import)
+780 {
+781     QFile file(chem);
+782     file.open(QIODevice::ReadOnly);
+783     if(import)
+784     {
+785         tab[0]=0x55;
+786         tab[1]=0xff;
+787         if(file.read(tab+2,65)!=65)
+788         {
+789             QMessageBox::warning(this, QString::fromUtf8("Érreur"),
+790                                  tr("Impossible de charger!"),
+791                                  QMessageBox::Ok,
+792                                  QMessageBox::Ok);
+793             return 0;
+794         }
+795     }
+796     else
+797     {
+798         if(file.read(tab,69)!=69)
+799         {
+800             QMessageBox::warning(this, QString::fromUtf8("Érreur"),
+801                                  tr("Impossible de charger!"),
+802                                  QMessageBox::Ok,
+803                                  QMessageBox::Ok);
+804             return 0;
+805         }
+806     }
+807     Type->setCurrentIndex(tab[2]&0x0F);
+808     Mode->setCurrentIndex((tab[2]&0xF0)>>4);
+809     for(int l=0;l<6;l++)
+810     {
+811         CheckInverseur[l]->setChecked(tab[3]&(0x01<<l));
+812     }
+813     for(int x=0;x<3;x++)
+814     {
+815         for(int y=0;y<2;y++)
+816         {
+817             LabValDR[y][x]->setNum(tab[4+y+x*2]);
+818             SlidDR[y][x]->setValue(tab[4+y+x*2]);
+819         }
+820     }
+821     for(int x=0;x<3;x++)
+822     {
+823         LabValDebatement[x]->setNum(tab[10+x]);
+824         SlidDebatement[x]->setValue(tab[10+x]);
+825     }
+826     for(int x=0;x<6;x++)
+827     {
+828         for(int y=0;y<2;y++)
+829         {
+830             LabValFinDeCourse[x][y]->setNum(tab[13+y+x*2]);
+831             if(y==0)
+832                 SlidFinDeCourse[x][y]->setValue(tab[13+y+x*2]);
+833             else
+834                 SlidFinDeCourse[x][y]->setValue(120-tab[13+y+x*2]);
+835         }
+836     }
+837     for(int x=0;x<5;x++)
+838     {
+839         SpinGrapheMoteur[0][x]->setValue(tab[25+x*2]);
+840         SpinGrapheMoteur[1][x]->setValue(tab[26+x*2]);
+841         SpinGraphePas[0][x]->setValue(tab[35+x*2]);
+842         SpinGraphePas[1][x]->setValue(tab[36+x*2]);
+843     }
+844 
+845     for(int x=0;x<6;x++)
+846     {
+847         LabValTrime[x]->setNum(tab[45+x]);
+848         SlidTrime[x]->setValue(tab[45+x]);
+849     }
+850     for(int x=0;x<3;x++)
+851     {
+852         MixSource[x]->setCurrentIndex((tab[51+x*4]&0xF0)>>4);
+853         MixDestination[x]->setCurrentIndex(tab[51+x*4]&0x0F);
+854         MixPositif[x]->setValue(tab[52+x*4]);
+855         MixNegatif[x]->setValue(tab[53+x*4]);
+856         MixInterupteur[x]->setCurrentIndex(tab[54+x*4]);
+857     }
+858     InterupteurA->setCurrentIndex(tab[63]);
+859     InterupteurB->setCurrentIndex(tab[64]);
+860     PotA->setCurrentIndex(tab[65]);
+861     PotB->setCurrentIndex(tab[66]);
+862     return 1;
+863 }
+864 
+865 void MainWindowImpl::FoncEnvoyer()
+866 {
+867     unsigned int somme=0;
+868     if(port->isOpen())
+869     {
+870         for(int l=2;l<67;l++)
+871         {
+872             somme+=(unsigned char)tab[l];
+873         }
+874         tab[67]=somme>>8;
+875         tab[68]=somme;
+876 
+877         if(port->write(tab,69)!=69)
+878             QMessageBox::warning(this, QString::fromUtf8("Érreur"),
+879                                  tr("Impossible d'envoyer sur le port serie!"),
+880                                  QMessageBox::Ok,
+881                                  QMessageBox::Ok);
+882         port->flush();
+883     }
+884     else
+885     {
+886          QMessageBox::warning(this, QString::fromUtf8("Érreur"),
+887                                  tr("Impossible d'envoyer sur le port serie!"),
+888                                  QMessageBox::Ok,
+889                                  QMessageBox::Ok);
+890     }
+891 }
+892 
+893 void MainWindowImpl::FoncA_propos()
+894 {
+895     QMessageBox::information( this, QString::fromUtf8("À propos"),
+896         QString::fromUtf8("Confiture V2.0 \n\n\
+897 Cette application permet de programmer les télécommandes \n\
+898 Turborix 2.4ghz, FLY SKY CT6A, Hobby King et autres copies \n\n\
+899 Auteur: Simon Fourquier \nEmail: simoncortex-helico@yahoo.fr"),
+900         "&OK");
+901 }
+902 
+903 MainWindowImpl::~MainWindowImpl()
+904 {
+905     QFile file(QDir::home().path()+"/.confiture");
+906     file.open(QIODevice::WriteOnly);
+907     file.write(fichier_courant.toAscii(),500);
+908     file.write(CBPort->currentText().toAscii(),500);
+909 }
+910 
+911 

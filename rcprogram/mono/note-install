@@ -1,0 +1,52 @@
+
+2011-8-6
+
+build
+======
+Environment: fedora 14
+
+[1] install:
+for mono: bison, gettext
+for gdiplus: 
+glib2-devel libX11-devel freetype-devel fontconfig-devel
+
+[2] mono:
+# without gettext, configure uses --enable-nls=no
+./configure --prefix=/home/to/mono/bin
+make
+make install
+
+[3] libgdiplus: 
+./configure --prefix=/home/to/mono/bin
+make 
+make install
+
+[4] mono-basic: need gettext
+./configure --prefix=/home/to/mono/bin
+export PATH=$PATH:/home/to/mono/bin/bin
+make
+make install
+
+[5] run digital radio:
+export LD_LIBRARY_PATH=/home/to/mono/bin/lib 
+mono DigitalRadio.exe
+
+
+test mono
+==========
+
+console hello.cs:
+ using System;
+ 
+ public class HelloWorld
+ {
+	static public void Main ()
+	{
+		Console.WriteLine ("Hello Mono World");
+	}
+ 
+ }
+
+gmcs hello.cs
+mono hello.exe
+
