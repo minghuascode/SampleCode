@@ -1,0 +1,41 @@
+2011-8-7
+
+T6 Remote Control
+==================
+
+The following radio remote controls are roughly the same design. 
+They can be programmed using roughly the same programs.
+
+ - HobbyKing HK-T6A
+ - FlySky FS-CT6A
+ - Turborix TBXT6
+ - Exceed RC FS-CT6A
+ - Storm ST-06TX
+ - CopterX CX-CT6A
+ - Jamara FCX 6
+
+
+How to program a t6 remote control
+===================================
+
+[1] There is a binary config program from t6 vendors. 
+    See t6config subdir under rcbinaries project.
+
+[2] Another app, is Qt based source code from modelisme.com.
+    Only problem is that it's in a foreign language.
+    See t6src subdirectory under this project. 
+
+[3] Three alternative ways.  See t6Alternate.html. 
+
+[3.1] DigitalRadio.exe. See mono subdir for linux use.
+      To use this program on linux, we build mono first. 
+
+[3.2] Charles Conklin's .Net application. We don't keep this program.
+
+[3.3] Turborix.exe and AtEasy. See turborix subdir under rcbinaries.
+      Basically, you install ATEasy as a driver, then run turborix.exe.
+
+
+[3.4] There is a MAC turborix app mentioned by t6Alternate.html.
+      It has a better interface among all. We don't keep this program.
+
