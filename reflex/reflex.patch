@@ -1,0 +1,81 @@
+Index: python/genreflex/gendict.py
+===================================================================
+--- python/genreflex/gendict.py	(revision 25049)
++++ python/genreflex/gendict.py	(working copy)
+@@ -1250,9 +1250,9 @@
+       narg  = len(args)
+       if ndarg : iden = '  '
+       else     : iden = ''
+-      if returns != 'void' and (returns in self.basictypes or
+-                                self.translate_typedef (f['returns']) in
+-                                self.basictypes):
++      if returns != 'void': #and (returns in self.basictypes or
++                           #     self.translate_typedef (f['returns']) in
++                           #     self.basictypes):
+         s += '  static %s ret;\n' % returns
+       for n in range(narg-ndarg, narg+1) :
+         if ndarg :
+@@ -1269,11 +1269,11 @@
+           elif returns[-1] == '&' :
+             first = iden + '  return (void*)&%s(' % ( name, )
+             s += first + self.genMCOArgs(args, n, len(first)) + ');\n'
+-          elif (returns in self.basictypes or
+-                self.translate_typedef (f['returns']) in self.basictypes):
+-            first = iden + '  ret = %s(' % ( name, )
+-            s += first + self.genMCOArgs(args, n, len(first)) + ');\n'
+-            s += iden + '  return &ret;\n'        
++          #elif (returns in self.basictypes or
++          #      self.translate_typedef (f['returns']) in self.basictypes):
++          #  first = iden + '  ret = %s(' % ( name, )
++          #  s += first + self.genMCOArgs(args, n, len(first)) + ');\n'
++          #  s += iden + '  return &ret;\n'        
+           else :
+             first = iden + '  return new %s(%s(' % ( returns, name )
+             s += first + self.genMCOArgs(args, n, len(first)) + '));\n'
+@@ -1484,9 +1484,9 @@
+     if ndarg : iden = '  '
+     else     : iden = ''
+     if returns != 'void' :
+-      if (returns in self.basictypes or
+-          self.translate_typedef (attrs['returns']) in self.basictypes or
+-          name == 'operator %s'%tdfname):
++      #if (returns in self.basictypes or
++      #    self.translate_typedef (attrs['returns']) in self.basictypes or
++      if  (name == 'operator %s'%tdfname):
+         s += '  static %s ret;\n' % returns
+       elif returns.find('::*)') != -1 :
+         s += '  static %s;\n' % returns.replace('::*','::* ret')
+@@ -1508,9 +1508,9 @@
+         elif returns[-1] == '&' :
+           first = iden + '  return (void*)&(((%s*)o)->%s)(' % ( cl, name )
+           s += first + self.genMCOArgs(args, n, len(first)) + ');\n'
+-        elif (returns in self.basictypes or
+-              self.translate_typedef (attrs['returns']) in self.basictypes or
+-              returns.find('::*') != -1 or
++        #elif (returns in self.basictypes or
++        #      self.translate_typedef (attrs['returns']) in self.basictypes or
++        elif (returns.find('::*') != -1 or
+               name == 'operator '+tdfname):
+           first = iden + '  ret = (((%s*)o)->%s)(' % ( cl, name )
+           s += first + self.genMCOArgs(args, n, len(first)) + ');\n'
+Index: src/Makefile.am
+===================================================================
+--- src/Makefile.am	(revision 25049)
++++ src/Makefile.am	(working copy)
+@@ -5,6 +5,8 @@
+ 
+ LDFLAGS = -version-info 0:0:0
+ 
++AM_CXXFLAGS = -g
++
+ lib_LTLIBRARIES = libReflex.la
+ 
+ libReflex_la_SOURCES =               \
+@@ -35,6 +37,7 @@
+   Namespace.cxx                      \
+   NamespaceBuilder.cxx               \
+   Object.cxx                         \
++  OwnedPropertyList.cxx              \
+   Pointer.cxx                        \
+   PointerToMember.cxx                \
+   PropertyList.cxx                   \
