@@ -18,9 +18,7 @@ BOOST_FUSION_ADAPT_STRUCT( Foo_s,  (int, i)  (char, k[100]) )
 struct Bar_s { int v; Foo_s w; };
 BOOST_FUSION_ADAPT_STRUCT( Bar_s, (int, v)  (Foo_s, w) )
 
-template <typename T2> struct Dec_s       {  static void decode(T2   & f); };
-template <           > struct Dec_s<int > {  static void decode(int  & f); };
-template <           > struct Dec_s<char> {  static void decode(char & f); };
+template <typename T2> struct Dec_s {  static void decode(T2   & f); };
 
 struct AppendToTextBox {
     template <typename T>
@@ -37,8 +35,8 @@ struct AppendToTextBox {
 template <typename T2> void Dec_s<T2>::decode(T2 & f) {
     for_each(f, AppendToTextBox());
 };
-void Dec_s<int >::decode(int  & f) {};
-void Dec_s<char>::decode(char & f) {};
+template<> void Dec_s<int >::decode(int  & f) {};
+template<> void Dec_s<char>::decode(char & f) {};
 
 int main(int argc, char *argv[]) {
   Bar_s f = { 2, { 3, "abcd" } };
