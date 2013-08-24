@@ -110,23 +110,30 @@ print "\n**** got key  $k   pkts $pkts\n" if $cfg_debug;
 
 { my $lastpkts = 0;
   my $lasttm   = 0;
+  my $skipt    = 0;
   for ( my $i = 0; $i <= $#stat; $i++ ) {
     my $s = $stat[$i];
     my $tm = ${$s}[0];
     my $nc = ${$s}[1];
-    my $onc = ${$s}[1];
+    my $onc = ${$s}[2];
     my $pkts = ${$s}[3];
     my $opkts = ${$s}[4];
     my @ltm = localtime $tm;
-    $lastpkts = $pkts if $lastpkts>$pkts;
+    $lastpkts = $pkts+$opkts if $lastpkts>$pkts+$opkts;
     $lasttm   = $tm-1 if $lasttm  >$tm-1;
-    printf " %s %02d-%02d-%02d:%02d:%02d   %3d(-%3d)   %4d(-%4d)   %6.2f\n", 
+    if ( $nc || $onc || $pkts || $opkts) {
+        printf "   ... skipt $skipt ...\n" if $skipt;
+        printf " %s %02d-%02d-%02d:%02d:%02d   %3d(-%3d)   %4d(-%4d)   %6.2f\n", 
            $tm, $ltm[4]+1, $ltm[3], $ltm[2], $ltm[1], $ltm[0], 
-           $nc, $onc, $pkts, $opkts, ($pkts-$lastpkts+$opkts)/($tm-$lasttm) 
-        if ( $nc || $onc || $pkts || $opkts);
+           $nc, $onc, $pkts, $opkts, ($pkts-$lastpkts+$opkts)/($tm-$lasttm) ;
+        $skipt = 0;
+    } else { 
+        $skipt ++;
+    }
     $lastpkts = $pkts;
     $lasttm   = $tm;
   }
+        printf "   ... skipt $skipt ...\n" if $skipt;
 }
 
 
