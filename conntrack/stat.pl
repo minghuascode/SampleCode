@@ -122,7 +122,8 @@ print "\n**** got key  $k   pkts $pkts\n" if $cfg_debug;
     $lasttm   = $tm-1 if $lasttm  >$tm-1;
     printf " %s %02d-%02d-%02d:%02d:%02d   %3d(-%3d)   %4d(-%4d)   %6.2f\n", 
            $tm, $ltm[4]+1, $ltm[3], $ltm[2], $ltm[1], $ltm[0], 
-           $nc, $onc, $pkts, $opkts, ($pkts-$lastpkts+$opkts)/($tm-$lasttm);
+           $nc, $onc, $pkts, $opkts, ($pkts-$lastpkts+$opkts)/($tm-$lasttm) 
+        if ( $nc || $onc || $pkts || $opkts);
     $lastpkts = $pkts;
     $lasttm   = $tm;
   }
