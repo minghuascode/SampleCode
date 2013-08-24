@@ -1,0 +1,8 @@
+
+Files: 
+
+ snd.sh   -- run this on the router send conn info to a server
+ rcv.sh   -- run this on server to receive conn info
+ show.sh  -- run this on server to archive info into datadir/
+ stat.pl  -- walk datadir/ finding conn num and packets for an ip
+
