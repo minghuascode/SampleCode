@@ -4,7 +4,8 @@
 use strict;
 
 my $cfg_debug = 0;
-my $cfg_num = 100; # default IP to track
+my $cfg_num = 100; # default number to show
+my $cfg_start = 0; # default start record number to show
 if ( $#ARGV >= 0 ) {
     if ( $ARGV[0] =~ m/\d+/ ) {
         my $n = $ARGV[0];
@@ -12,8 +13,17 @@ if ( $#ARGV >= 0 ) {
             $cfg_num = $n;
         }
     }
+  if ( $#ARGV >= 1 ) {
+    if ( $ARGV[1] =~ m/\d+/ ) {
+        my $n = $ARGV[1];
+        if ( $n > 1 ) {
+            $cfg_start = $n;
+        }
+    }
+  }
 }
 printf " search number $cfg_num\n";
+printf " search start  $cfg_start\n";
 
 my $some_dir = 'datadir';
 my @files = ();
@@ -36,7 +46,34 @@ my @stat = ();
 my %conn = ();
 
 my $nfiles = 0;
-foreach my $f (@files) {
+my $show_start = 0;
+my $show_span = 0;
+my $show_time = time;
+
+if ($cfg_start < 100) {
+    $show_start = $#files + 1 - $cfg_start ;
+    $show_start = 0 if $show_start < 0;
+    print " show start at sample $show_start\n";
+} else {
+    $show_span = int($cfg_start/100) * 60 * 60;
+    $show_time -= $show_span;
+    print " show start at time $show_time\n";
+}
+
+for (my $i = $show_start; $i <= $#files; $i++) {
+    my $f = $files[$i];
+
+    if ( $cfg_start >= 100 ) {
+        if ( $f =~ m/data(\d+)\.log/ ) {
+            my $ftm = $1;
+            if ( $ftm < $show_time ) {
+                next;
+            }
+        } else {
+            die "wrong file pattern\n";
+        } 
+    }
+
     #last if $nfiles >= 12;
     $nfiles ++;
 
@@ -113,19 +150,17 @@ print "\n**** got key  $k   pkts $pkts\n" if $cfg_debug;
   my $skipt    = 0;
   for ( my $i = 0; $i <= $#stat; $i++ ) {
     my $s = $stat[$i];
-    my $tm = ${$s}[0];
-    my $nc = ${$s}[1];
-    my $onc = ${$s}[2];
-    my $pkts = ${$s}[3];
-    my $opkts = ${$s}[4];
+    my ($tm, $nc, $onc, $pkts, $opkts) = @{$s};
     my @ltm = localtime $tm;
     $lastpkts = $pkts+$opkts if $lastpkts>$pkts+$opkts;
     $lasttm   = $tm-1 if $lasttm  >$tm-1;
     if ( $nc || $onc || $pkts || $opkts) {
         printf "   ... skipt $skipt ...\n" if $skipt;
-        printf " %s %02d-%02d-%02d:%02d:%02d   %3d(-%3d)   %4d(-%4d)   %6.2f\n", 
-           $tm, $ltm[4]+1, $ltm[3], $ltm[2], $ltm[1], $ltm[0], 
-           $nc, $onc, $pkts, $opkts, ($pkts-$lastpkts+$opkts)/($tm-$lasttm) ;
+        my $tmprt = sprintf "%s %02d-%02d-%02d:%02d:%02d", 
+           $tm, $ltm[4]+1, $ltm[3], $ltm[2], $ltm[1], $ltm[0]; 
+        printf " %s   %3d(-%3d)   %4d(-%4d)   %6.2f   %2d\n", 
+           $tmprt, $nc, $onc, $pkts, $opkts, 
+           ($pkts-$lastpkts+$opkts)/($tm-$lasttm), $tm-$lasttm ;
         $skipt = 0;
     } else { 
         $skipt ++;
